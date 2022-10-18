@@ -1,2 +1,10 @@
 /node_modules
 package-lock.json
+allure-results
+_results_
+
+test/specs/tests/sortMonsters.spec.js
+test/specs/tests/unfavoriteAll.spec.js
+test/specs/tests/starter.spec.js
+test/specs/tests/randomMonsterTeam.spec.js
+test/specs/tests/data

@@ -1,3 +1,5 @@
+const video = require('wdio-video-reporter');
+
 exports.config = {
     //
     // ====================
@@ -21,12 +23,23 @@ exports.config = {
     // will be called from there.
     //
     specs: [
-        './test/specs/**/*.js'
+        './test/specs/tests/*.spec.js'
     ],
     // Patterns to exclude.
-    exclude: [
-        // 'path/to/excluded/files'
-    ],
+    exclude: ['./test/specs/tests/starter.spec.js', './test/specs/tests/removeAllMonsters.spec.js', './test/specs/tests/unfavoriteAll.spec.js'],
+    suites: {
+        smoke: ['./test/specs/tests/smoke.spec.js'],
+        login: ['./test/specs/tests/login.spec.js'],
+        nav: ['./test/specs/tests/nav.spec.js'],
+        createMonster: ['./test/specs/tests/createMonster.spec.js'],
+        editMonster: ['./test/specs/tests/editMonster.spec.js'],
+        createRandomMonster: ['./test/specs/tests/createRandomMonster.spec.js'],
+        removeAllMonsters: ['./test/specs/tests/removeAllMonsters.spec.js'],
+        deleteMonster: ['./test/specs/tests/deleteMonster.spec.js'],
+        randomMonsterTeam: ['./test/specs/tests/randomMonsterTeam.spec.js'],
+        unfavoriteAll: ['./test/specs/tests/unfavoriteAll.spec.js'],
+        sortMonsters: ['./test/specs/tests/sortMonsters.spec.js']
+    },
     //
     // ============
     // Capabilities
@@ -43,18 +56,18 @@ exports.config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 10,
+    maxInstances: 1,
     //
     // If you have trouble getting all important capabilities together, check out the
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
     // https://saucelabs.com/platform/platform-configurator
     //
     capabilities: [{
-    
+
         // maxInstances can get overwritten per capability. So if you have an in-house Selenium
         // grid with only 5 firefox instances available you can make sure that not more than
         // 5 instances get started at a time.
-        maxInstances: 5,
+        maxInstances: 1,
         //
         browserName: 'chrome',
         acceptInsecureCerts: true
@@ -70,7 +83,7 @@ exports.config = {
     // Define all options that are relevant for the WebdriverIO instance here
     //
     // Level of logging verbosity: trace | debug | info | warn | error | silent
-    logLevel: 'info',
+    logLevel: 'error',
     //
     // Set specific log levels per logger
     // loggers:
@@ -94,7 +107,7 @@ exports.config = {
     // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
     // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
     // gets prepended directly.
-    baseUrl: 'http://localhost',
+    baseUrl: 'http://localhost:4200',
     //
     // Default timeout for all waitFor* commands.
     waitforTimeout: 10000,
@@ -111,7 +124,7 @@ exports.config = {
     // your test setup with almost no effort. Unlike plugins, they don't add new
     // commands. Instead, they hook themselves up into the test process.
     services: ['chromedriver'],
-    
+
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber
     // see also: https://webdriver.io/docs/frameworks
@@ -132,10 +145,23 @@ exports.config = {
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
     // see also: https://webdriver.io/docs/dot-reporter
-    reporters: ['spec'],
-
-
-    
+    reporters: [
+        'spec',
+        [
+            'allure', {
+                outputDir: 'allure-results',
+                disableWebdriverStepsReporting: true,
+                disableWebdriverScreenShotReporting: false
+            }
+        ],
+        [
+            video,
+            {
+                saveAllVideos: false,
+                videoSlowDownMultiplier: 10
+            }
+        ]
+    ],
     //
     // Options to be passed to Mocha.
     // See the full list at http://mochajs.org/
@@ -195,8 +221,12 @@ exports.config = {
      * @param {Array.<String>} specs        List of spec file paths that are to be run
      * @param {Object}         browser      instance of created browser/device session
      */
-    // before: function (capabilities, specs) {
-    // },
+    before: function () {
+        const chai = require('chai');
+        global.assert = chai.assert;
+
+        global.configBaseUrl = this.baseUrl + '/';
+    },
     /**
      * Runs before a WebdriverIO command gets executed.
      * @param {String} commandName hook command name
@@ -237,8 +267,11 @@ exports.config = {
      * @param {Boolean} result.passed    true if test has passed, otherwise false
      * @param {Object}  result.retries   informations to spec related retries, e.g. `{ attempts: 0, limit: 0 }`
      */
-    // afterTest: function(test, context, { error, result, duration, passed, retries }) {
-    // },
+    afterTest: function (test) {
+        if (test.error !== undefined) {
+            browser.takeScreenShot();
+        }
+    },
 
 
     /**

@@ -8,7 +8,9 @@
   "extends": ["eslint:recommended", "plugin:wdio/recommended"],
   "globals": {
     "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
+    "SharedArrayBuffer": "readonly",
+    "assert": true,
+    "configBaseUrl": true
   },
   "parserOptions": {
     "ecmaVersion": 2018,
